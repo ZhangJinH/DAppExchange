@@ -1,58 +1,43 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import { Layout } from 'antd'
+import React, { useEffect } from 'react'
+import './App.less'
+import { useAppDispatch, useAppSelector } from './app/hooks'
+import NavBar from './components/NavBar'
+import LayoutContent from './components/Content'
+import {
+  contractLoadedGetters,
+  exchangeGetters,
+  loadWeb3,
+  web3Getters
+} from './features/web3/web3Slice'
+import { loadAccount, loadExchange, loadToken } from './features/web3/web3API'
 
-function App() {
+const { Header, Content } = Layout
+
+const App: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const connection = useAppSelector(web3Getters)
+  const contractLoaded = useAppSelector(contractLoadedGetters)
+
+  useEffect(() => {
+    dispatch(loadWeb3())
+  }, [dispatch])
+  useEffect(() => {
+    if (connection) {
+      dispatch(loadAccount(connection))
+      dispatch(loadToken(connection))
+      dispatch(loadExchange(connection))
+    }
+  }, [dispatch, connection])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+    <Layout className="layout">
+      <Header style={{ display: 'flex' }}>
+        <NavBar />
+      </Header>
+      <Content>{contractLoaded && <LayoutContent />}</Content>
+    </Layout>
+  )
 }
 
-export default App;
+export default App
